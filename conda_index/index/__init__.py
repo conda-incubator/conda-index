@@ -6,7 +6,6 @@ import functools
 import json
 import logging
 import os
-import subprocess
 import sys
 import time
 from collections import OrderedDict
@@ -47,7 +46,7 @@ log = logging.getLogger(__name__)
 
 
 def logging_config():
-    """For subprocess."""
+    """Called by package extraction subprocesses to re-configure logging."""
     import conda_index.index.logutil
 
     conda_index.index.logutil.configure()
@@ -485,28 +484,6 @@ def _make_channeldata_index_html(channel_name, channeldata):
         current_time=datetime.utcnow().replace(tzinfo=pytz.timezone("UTC")),
     )
     return rendered_html
-
-
-def _get_source_repo_git_info(path):
-    is_repo = subprocess.check_output(
-        ["git", "rev-parse", "--is-inside-work-tree"], cwd=path
-    )
-    if is_repo.strip().decode("utf-8") == "true":
-        output = subprocess.check_output(
-            ["git", "log", "--pretty=format:'%h|%ad|%an|%s'", "--date=unix"], cwd=path
-        )
-        commits = []
-        for line in output.decode("utf-8").strip().splitlines():
-            _hash, _time, _author, _desc = line.split("|")
-            commits.append(
-                {
-                    "hash": _hash,
-                    "timestamp": int(_time),
-                    "author": _author,
-                    "description": _desc,
-                }
-            )
-    return commits
 
 
 def _get_resolve_object(subdir, file_path=None, precs=None, repodata=None):

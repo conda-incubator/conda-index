@@ -211,8 +211,6 @@ class CondaIndexCache:
         mtime = stat_result.st_mtime
         retval = fn, mtime, size, None
 
-        log.info("Extract %s to cache" % fn)
-
         try:
             # we no longer re-use the .conda cache for .tar.bz2
             # faster conda extraction should preserve enough performance
@@ -226,9 +224,11 @@ class CondaIndexCache:
             ).fetchone()
 
             if cached_row and not second_try:
+                log.info("Found %s in cache" % fn)
                 index_json = json.loads(cached_row[0])
 
             else:
+                log.info("Extract %s to cache" % fn)
                 index_json = self.extract_to_cache_unconditional(fn, abs_fn, size)
 
             retval = fn, mtime, size, index_json
